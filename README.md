@@ -104,6 +104,10 @@ Add the following to your mcp config json:
 ## Troubleshooting
 
 - **Puppeteer crashing or failing to launch**: Sometimes the stealth plugin requires system libraries. Ensure you have standard local chromium dependencies installed if running on Linux. On Windows/Mac, it usually runs out of the box.
+- **ARM / Raspberry Pi Support**: Puppeteer's bundled Chromium may not work on ARM architectures out of the box. To run this project on a Raspberry Pi or other ARM devices:
+  1. Install the native Chromium browser: `sudo apt-get install chromium-browser`
+  2. The server will automatically attempt to use `/usr/bin/chromium-browser`.
+  3. If your Chromium is installed in a different location, set the `PUPPETEER_EXECUTABLE_PATH` environment variable before running the server (e.g., `export PUPPETEER_EXECUTABLE_PATH=/custom/path/to/chromium`).
 - **Initial Request Delay**: The very first question may take a few seconds as the headless browser sets up the site https://dev.epicgames.com/community/assistant/unreal-engine. Subsequent requests in the same session will be much faster. You can use `--delay` to control the artificial delay while waiting for cloudflare verification. 
 
 ## Licensing
