@@ -32,31 +32,33 @@ This server supports multiple MCP transport methods:
 ### 1. Stdio (Default)
 Standard communication over `stdout`/`stderr`. This is the most common integration method for tools like Claude Desktop and Cursor.
 
+> **Note:** Because this project uses Yarn Zero Installs (PnP), you must use `yarn node` instead of standard `node` to resolve dependencies.
+
 ```bash
-node index.js
+yarn node index.js
 ```
 
 ### 2. Standard Server-Sent Events (SSE)
 Starts a local web server to handle context protocol requests via plain SSE. 
 
 ```bash
-node index.js --sse
+yarn node index.js --sse
 ```
 
 By default it listens at: `http://127.0.0.1:3000/sse`
 
-*(You can override the port/host by passing `--port XXXX` and `--host XXXX`, e.g., `node index.js --sse --port 4000 --host localhost`)*
+*(You can override the port/host by passing `--port XXXX` and `--host XXXX`, e.g., `yarn node index.js --sse --port 4000 --host localhost`)*
 
 ### 3. Streamable HTTP
 Starts a local web server with full MCP Streamable HTTP session support. 
 
 ```bash
-node index.js --streamable-http
+yarn node index.js --streamable-http
 ```
 
 By default it listens at: `http://127.0.0.1:3000/mcp`
 
-*(You can override the port/host by passing `--port XXXX` and `--host XXXX`, e.g., `node index.js --streamable-http --port 4000 --host localhost`)*
+*(You can override the port/host by passing `--port XXXX` and `--host XXXX`, e.g., `yarn node index.js --streamable-http --port 4000 --host localhost`)*
 
 ## Development
 
@@ -88,9 +90,10 @@ Add the following to your mcp config json:
 {
   "mcpServers": {
     "unreal-ai-assistant": {
-      "command": "node",
+      "command": "yarn",
       "args": [
-        "/path/to/your/unreal-engine-assistant-mcp/index.js",
+        "node",
+        "/path/to/your/unreal-engine-assistant-mcp/index.js"
       ]
     }
   }
