@@ -55,11 +55,36 @@ async function runPuppeteerQuery(query) {
   const delayArgIndex = process.argv.indexOf('--delay');
   const delayMs = delayArgIndex !== -1 ? parseInt(process.argv[delayArgIndex + 1], 10) : 2000;
 
-  const browser = await puppeteer.launch({ 
-    headless: true, // Keep GUI hidden
-    defaultViewport: null,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  let browser;
+  try {
+    const launchOptions = { 
+      headless: true, // Keep GUI hidden
+      defaultViewport: null,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    };
+
+    // If running on ARM architecture (like Raspberry Pi), default to the native Chromium
+    if (process.arch === 'arm' || process.arch === 'arm64') {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser';
+    } else if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+
+    browser = await puppeteer.launch(launchOptions);
+  } catch (error) {
+    if (process.arch === 'arm' || process.arch === 'arm64') {
+      console.error(`\n[Error] Failed to launch Chromium on ARM architecture (${process.arch}).`);
+      console.error(`Puppeteer's bundled Chromium may not work on Raspberry Pi/ARM devices.`);
+      console.error(`Please ensure you have installed the native Chromium browser.`);
+      console.error(`Run the following command to install it:\n`);
+      console.error(`    sudo apt-get install chromium-browser\n`);
+      console.error(`If it is installed in a different location, set the PUPPETEER_EXECUTABLE_PATH environment variable.`);
+      console.error(`Original Error: ${error.message}\n`);
+    } else {
+      console.error(`\n[Error] Failed to launch Chromium: ${error.message}\n`);
+    }
+    return `Failed to initialize headless browser. Check console for details. Error: ${error.message}`;
+  }
 
   try {
     const page = await browser.newPage();
