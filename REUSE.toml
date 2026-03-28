@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Deutsche Telekom AG
+# SPDX-FileCopyrightText: 2026 Daniel Eder
 #
 # SPDX-License-Identifier: CC0-1.0    
 
@@ -11,3 +11,15 @@ version = 1
 # precedence = "aggregate"
 # SPDX-FileCopyrightText = "2022 Free Software Foundation Europe e.V. <https://fsfe.org>"
 # SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".pnp.*", "package.json", "yarn.lock", ".yarnrc.yml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Daniel Eder"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".yarn/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Original Copyright Holders"
+SPDX-License-Identifier = "CC0-1.0"

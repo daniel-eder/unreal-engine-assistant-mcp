@@ -1,32 +1,114 @@
 <!--
-SPDX-FileCopyrightText: 2023 Deutsche Telekom AG
+SPDX-FileCopyrightText: 2026 Daniel Eder
 
 SPDX-License-Identifier: CC0-1.0    
 -->
 
-# my-sample-project
+# Unreal Engine Assistant MCP
 
-[![REUSE Compliance Check](../../actions/workflows/reuse-compliance.yml/badge.svg)](../../actions/workflows/reuse-compliance.yml)
+A Model Context Protocol (MCP) server that connects to the Epic Games [Unreal AI Assistant](https://dev.epicgames.com/community/assistant/unreal-engine).
 
-## About
+This server allows AI assistants (like Claude, Cursor, or any MCP-compatible client) to query Epic's Unreal AI and retrieve highly accurate, up-to-date documentation, C++ code snippets, and Blueprint guidance. It respects Epic's allowed contents (`/allowed` endpoint) and rate limits (`/check_limit` endpoint). Puppeteer is used to avoid reverse-engineering their API.
 
-my-sample-project is a ...
-<!-- TODO: Finish this sentence by describing what the project does. This here should only be one sentence -->
+## Prerequisites
 
-The main use cases of my-sample-project are
-- ....
-- ....
-- ....
-<!-- TODO: Add here the project's main use cases. -->
+- Node.js (v18+)
+- Yarn (`yarn set version stable`)
 
-## Code of Conduct
+## Installation
 
-This project has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) in version 2.1 as our code of conduct. Please see the details in our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). All contributors must abide by the code of conduct.
+Clone this repository and install dependencies:
 
-By participating in this project, you agree to abide by its [Code of Conduct](./CODE_OF_CONDUCT.md) at all times.
+```bash
+git clone https://github.com/daniel-eder/unreal-engine-assistant-mcp.git
+cd unreal-engine-assistant-mcp
+yarn install
+```
+
+## Usage
+
+This server supports multiple MCP transport methods:
+
+### 1. Stdio (Default)
+Standard communication over `stdout`/`stderr`. This is the most common integration method for tools like Claude Desktop and Cursor.
+
+```bash
+node index.js
+```
+
+### 2. Standard Server-Sent Events (SSE)
+Starts a local web server to handle context protocol requests via plain SSE. 
+
+```bash
+node index.js --sse
+```
+
+By default it listens at: `http://127.0.0.1:3000/sse`
+
+*(You can override the port/host by passing `--port XXXX` and `--host XXXX`, e.g., `node index.js --sse --port 4000 --host localhost`)*
+
+### 3. Streamable HTTP
+Starts a local web server with full MCP Streamable HTTP session support. 
+
+```bash
+node index.js --streamable-http
+```
+
+By default it listens at: `http://127.0.0.1:3000/mcp`
+
+*(You can override the port/host by passing `--port XXXX` and `--host XXXX`, e.g., `node index.js --streamable-http --port 4000 --host localhost`)*
+
+## Development
+
+If you want to run the server in development mode, simply use the scripts provided in `package.json`:
+- `yarn start` - Starts the MCP server via standard stdio transport.
+- `yarn start:sse` - Starts the plain HTTP SSE server.
+- `yarn start:streamable-http` - Starts the MCP Streamable HTTP server.
+- `yarn start:streamable-http --port 8080 --host localhost` - Starts the HTTP server with a custom port and host.
+
+## Command-Line Arguments
+
+The server accepts several command-line flags to customize its behavior:
+
+| Argument | Description | Default |
+| :--- | :--- | :--- |
+| `--sse` | Runs the server using the plain Server-Sent Events (SSE) transport. Suitable for simple HTTP integration. | (Disabled) |
+| `--streamable-http` | Runs the server using the advanced MCP Streamable HTTP transport with session support. | (Disabled) |
+| `--port <number>` | Overrides the port used when binding the HTTP server (for `--sse` and `--streamable-http`). | `3000` |
+| `--host <string>` | Overrides the host used when binding the HTTP server. Use `0.0.0.0` to expose to the local network. | `127.0.0.1` |
+| `--delay <number>` | Adjusts the sleep duration (in milliseconds) used by the headless browser to wait for Cloudflare validation before querying Epic's APIs. If queries fail, try increasing this. | `2000` |
+
+*(If no transport is defined via `--sse` or `--streamable-http`, the server defaults to Stdio transport)*
+
+## MCP Client Configuration
+
+Add the following to your mcp config json:
+
+```json
+{
+  "mcpServers": {
+    "unreal-ai-assistant": {
+      "command": "node",
+      "args": [
+        "/path/to/your/unreal-engine-assistant-mcp/index.js",
+      ]
+    }
+  }
+}
+```
+
+## Available Tools
+
+* `ask_unreal_engine_assistant` - Sends your question to the Unreal Engine Assistant and returns the structured markdown/HTML response. Takes a single string parameter: `question`.
+
+## Troubleshooting
+
+- **Puppeteer crashing or failing to launch**: Sometimes the stealth plugin requires system libraries. Ensure you have standard local chromium dependencies installed if running on Linux. On Windows/Mac, it usually runs out of the box.
+- **Initial Request Delay**: The very first question may take a few seconds as the headless browser sets up the site https://dev.epicgames.com/community/assistant/unreal-engine. Subsequent requests in the same session will be much faster. You can use `--delay` to control the artificial delay while waiting for cloudflare verification. 
 
 ## Licensing
-Copyright (c) XXXX Deutsche Telekom AG
+
+Copyright (c) 2026 Daniel Eder
 
 All content in this repository is licensed under at least one of the licenses found in [./LICENSES](./LICENSES); you may not use this file, or any other file in this repository, except in compliance with the Licenses. 
 You may obtain a copy of the Licenses by reviewing the files found in the [./LICENSES](./LICENSES) folder.
